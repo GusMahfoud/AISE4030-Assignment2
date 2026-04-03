@@ -235,6 +235,35 @@ def plot_training_losses(
     plt.savefig(out_path, dpi=150)
     plt.close()
 
+def plot_entropy(
+    entropies: List[float],
+    out_path: Union[str, Path],
+    title: str = "Policy entropy",
+) -> None:
+    
+    """
+    Save a matplotlib figure of mean policy entropy over training updates.
+ 
+    Required by Section 4.4.1 (PPO only) to show how exploration evolves.
+ 
+    Args:
+        entropies: Mean entropy value per update (one per rollout).
+        out_path: Path to save the figure (e.g., ``.png``).
+        title: Figure title.
+    """
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    updates = np.arange(1, len(entropies) + 1)
+    plt.figure(figsize=(10, 5))
+    plt.plot(updates, entropies, label="Mean entropy", color="green")
+    plt.xlabel("Update")
+    plt.ylabel("Entropy")
+    plt.title(title)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
 
 def project_root_from_config(config_path: Union[str, Path]) -> Path:
     """

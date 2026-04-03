@@ -141,10 +141,9 @@ class ReinforceBaselineAgent:
         assignment PDF. The value loss is MSE between ``V(s_t)`` and the **raw**
         discounted returns ``G_t`` (Section 4.2.4: actual returns). The policy
         term uses ``A_t = G_t - V(s_t)`` with ``V`` detached for the actor; when
-        ``normalize_returns`` is True, that baseline-subtracted vector is
-        standardized per episode (mean/variance with epsilon) before multiplying
-        log-probabilities, giving a variance-reduced policy gradient signal while
-        the critic still regresses unscaled returns.
+        ``normalize_returns`` is True, the per-episode discounted returns are
+        standardized first (mean/variance with epsilon), then used in baseline
+        subtraction for the policy signal to satisfy Section 4.2.2.
 
         Returns:
             Tuple ``(policy_loss, value_loss, mean_entropy)`` as Python floats.
@@ -161,6 +160,11 @@ class ReinforceBaselineAgent:
 
         returns = _discount_returns(self._rewards, self.gamma)
         ret_t = torch.tensor(returns, dtype=torch.float32, device=self.device)
+        policy_returns = ret_t
+        if self.normalize_returns:
+            r_mean = ret_t.mean()
+            r_std = ret_t.std(unbiased=False).clamp_min(0.0)
+            policy_returns = (ret_t - r_mean) / (r_std + self.return_norm_eps)
 
         states_b = torch.stack(self._states, dim=0)
         log_probs_b = torch.stack(self._log_probs, dim=0)
@@ -169,13 +173,7 @@ class ReinforceBaselineAgent:
         with torch.no_grad():
             mean_entropy = float(self.policy.entropy(states_b).mean().item())
 
-        advantage = ret_t - values.detach()
-        if self.normalize_returns:
-            a_mean = advantage.mean()
-            a_std = advantage.std(unbiased=False).clamp_min(0.0)
-            policy_signal = (advantage - a_mean) / (a_std + self.return_norm_eps)
-        else:
-            policy_signal = advantage
+        policy_signal = policy_returns - values.detach()
 
         policy_loss = -(log_probs_b * policy_signal.detach()).mean()
         value_loss = nn.functional.mse_loss(values, ret_t)

@@ -1,7 +1,7 @@
 # AISE 4030 Assignment 2 — Policy Gradient configuration
 # Agent selection: "reinforce" or "ppo"
 
-agent_type: "reinforce"
+agent_type: "ppo"
 
 environment:
   name: "BipedalWalker-v3"
@@ -19,7 +19,7 @@ reinforce:
   value_lr: 0.001
   max_episodes: 3000
   moving_average_window: 100
-  checkpoint_interval: 100
+  checkpoint_interval: 10
   eval_episodes: 5
   # When true: standardize discounted returns G_t per episode before baseline subtraction for policy loss.
   normalize_returns: true
@@ -34,9 +34,9 @@ ppo:
   gae_lambda: 0.95
   value_loss_coef: 0.5
   entropy_coef: 0.01
-  max_episodes: 2000
+  max_episodes: 20
   moving_average_window: 100
-  checkpoint_interval: 100
+  checkpoint_interval: 10
   eval_episodes: 5
 
 paths:

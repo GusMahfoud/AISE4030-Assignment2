@@ -105,11 +105,8 @@ class GaussianPolicyNetwork(nn.Module):
             Tuple ``(action, log_prob)`` where ``action`` has the same batch shape as
             ``mean`` and ``log_prob`` is shape ``(B,)`` when batched or scalar when not.
         """
+        single = state.dim() == 1
         mean, std = self.forward(state)
-        single = mean.dim() == 1
-        if single:
-            mean = mean.unsqueeze(0)
-            std = std.unsqueeze(0)
 
         dist = Independent(Normal(mean, std), 1)
         pre = dist.rsample()
