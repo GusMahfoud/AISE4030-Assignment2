@@ -7,6 +7,17 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
+try:
+    import torch  # noqa: F401 — required by agents; fail fast with a clear message
+except ModuleNotFoundError:
+    print(
+        "Error: PyTorch is not installed in this environment.\n"
+        "From the BipedalWalker_PolicyGradient folder, with your conda env active, run:\n"
+        "  pip install -r requirements.txt\n"
+        "That installs torch, gymnasium[box2d], and the other assignment dependencies."
+    )
+    sys.exit(1)
+
 from environment import make_env, reset_env
 from ppo_agent import PPOAgent
 from reinforce_agent import ReinforceBaselineAgent

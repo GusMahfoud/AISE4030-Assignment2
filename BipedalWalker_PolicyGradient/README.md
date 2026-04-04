@@ -77,6 +77,12 @@ You should see `Observation shape: (24,)`, a `Box(-1.0, 1.0, (4,), float32)` act
 
 ## Train
 
+**Prerequisite:** Install everything in `requirements.txt` (including **PyTorch**). Verifying Gymnasium alone is not enough—`training_script.py` imports both agents and needs `torch`. From this folder, with `AISE4030_A2` (or your env) active:
+
+```bash
+pip install -r requirements.txt
+```
+
 From `BipedalWalker_PolicyGradient` (Section 3.1.4 of the PDF):
 
 ```bash
