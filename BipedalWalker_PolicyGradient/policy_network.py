@@ -68,6 +68,8 @@ class GaussianPolicyNetwork(nn.Module):
         self.body = nn.Sequential(*layers)
         self.mean_head = nn.Linear(prev, action_dim)
         self.log_std = nn.Parameter(torch.zeros(action_dim))
+        self.min_log_std = -20.0
+        self.max_log_std = 2.0
 
     def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -85,7 +87,8 @@ class GaussianPolicyNetwork(nn.Module):
             x = x.unsqueeze(0)
         h = self.body(x)
         mean = torch.tanh(self.mean_head(h))
-        std = torch.exp(self.log_std).expand_as(mean)
+        bounded_log_std = torch.clamp(self.log_std, self.min_log_std, self.max_log_std)
+        std = torch.exp(bounded_log_std).expand_as(mean)
         return mean, std
 
     def sample_action(

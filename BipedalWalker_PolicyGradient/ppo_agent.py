@@ -107,7 +107,11 @@ class PPOAgent:
  
         if stochastic:
             with torch.no_grad():
-                action_t, log_prob_t = self.policy.sample_action(state)
+                mean, std = self.policy(state)
+                dist = Independent(Normal(mean, std), 1)
+                raw_action_t = dist.rsample()
+                action_t = torch.clamp(raw_action_t, -1.0, 1.0)
+                log_prob_t = dist.log_prob(action_t)
                 value_t = self.value_net(state).squeeze(-1)
  
             action = action_t.cpu().numpy().astype(np.float32).flatten()
